@@ -4,21 +4,23 @@ __author__ = 'biswajeet'
 
 import numpy as np
 import sklearn.metrics as cma
-import matplotlib.pyplot as plt
-
 
 class SLP(object):
     def __init__(self):
+        #data dimension
         self.dim = 3
+        #learning rate
         self.eta = .1
+        #numpy matrix of weight vectors for the three classes
         self.u_weights = np.zeros(shape=(3, self.dim + 1))
+        #mean of the 3 gaussians with enough separation so that linear separability can be demonstrated
         self.mean1 = [0.0, 10.0, 5.0]  # class 1
         self.mean2 = [20.0, 5.0, -5.0]  # class 2
         self.mean3 = [-5.0, -5.0, -5.0]  # class 3
-
+        #var-cov matrix of the 3 gaussians
         self.cov1 = [[6.0, 3.0, 0.0],
                      [3.0, 3.0, 1.0],
-                     [0.0, 1.0, 2.0]]  # diagonal covariance, points lie on x or y-axis
+                     [0.0, 1.0, 2.0]]
         self.cov2 = [[5.0, -10.0, 0.0],
                      [-10.0, 15.0, 3.0],
                      [0.0, 3.0, 4.0]]
@@ -37,13 +39,6 @@ class SLP(object):
         self.labels_test = np.zeros(shape=75)
         self.prediction = np.zeros(shape=75)
 
-    """def show_plot(self):
-        plt.plot(self.data_train[1], self.data_train[2], 'x', color = 'Green')
-        plt.plot(x1, y1, 'x', color = 'Blue')
-        y_range = eval(formula)
-        plt.plot(x_range, y_range, color = 'Red')
-        plt.axis('equal')
-        plt.show()"""
 
     def generate_data(self):
         __doc__ = """ this is the generate method """
@@ -114,27 +109,6 @@ class SLP(object):
         print 'confusion matrix for the model is', cm
         print self.prediction
         print self.test_data
-
-        count = 0
-        print "biswa", self.data_train
-        pred = np.zeros(shape=300)
-        for i in self.data_train:
-            t_pdt_1 = np.dot(i[:4], np.transpose(self.u_weights[0]))
-            t_pdt_2 = np.dot(i[:4], np.transpose(self.u_weights[1]))
-            t_pdt_3 = np.dot(i[:4], np.transpose(self.u_weights[2]))
-            print count,"printings",t_pdt_1, t_pdt_2, t_pdt_3
-            if t_pdt_1 >= 0:
-                pred[count] = 1
-            elif t_pdt_2 >= 0:
-                pred[count] = 2
-            elif t_pdt_3 >= 0:
-                pred[count] = 3
-            else:
-                pred[count] = 0
-            count += 1
-        #print self.prediction
-        cm = cma.confusion_matrix(self.data_train[:,-1], pred)
-        print 'confusion matrix for the model is', cm
 
     # preparing training and testing data sets
     def train_model(self, label):
