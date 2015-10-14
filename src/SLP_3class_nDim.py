@@ -27,8 +27,12 @@ class SLP(object):
                      [1.0, -1.0, 6.0]]
 
         self.data_train = np.full((300, 5), 0.0)
-        self.test_data = np.full((75, 4), 0.0)
+        self.test_data = np.full((75, 5), 0.0)
+
+        #the matrix of weights to be learned
         self.u_weights = np.array([[-1.0, 5.0, 3.0, 4.0], [-2.0, 4.0, 1.0, 1.0], [-4.0, 2.0, 1.0, 3.0]])
+
+        #matrix of weights in the last iteration, required for the termination condition
         self.l_weights = np.full((3, 4), 0.0)
         self.labels_test = np.zeros(shape=75)
         self.prediction = np.zeros(shape=75)
@@ -57,18 +61,19 @@ class SLP(object):
         label3 = label2 + 1
 
         labels = np.concatenate((label1, label2, label3), axis=0)
+        #print x_data.__len__(),y_data.__len__(),z_data.__len__(), labels.__len__()
 
         for i, x, y, z, l in zip(range(300), x_data, y_data, z_data, labels):
             self.data_train[i] = [1, x, y, z, l]
 
-        #print self.data_train[:10]
+        #print "train_data", self.data_train
 
     def generate_test_data(self):
         __doc__ = """generating test data"""
 
         x_test, y_test, z_test = np.random.multivariate_normal(self.mean1, self.cov1, 25).T
         x1_test, y1_test, z1_test = np.random.multivariate_normal(self.mean2, self.cov2, 25).T
-        x2_test, y2_test, z2_test = np.random.multivariate_normal(self.mean2, self.cov2, 25).T
+        x2_test, y2_test, z2_test = np.random.multivariate_normal(self.mean3, self.cov3, 25).T
 
         x_data_test = np.concatenate((x_test, x1_test, x2_test), axis=0)
         y_data_test = np.concatenate((y_test, y1_test, y2_test), axis=0)
@@ -82,19 +87,19 @@ class SLP(object):
         # print label1_test.shape
 
         # preparing training and testing data sets
-        for i, x, y, z in zip(range(75), x_data_test, y_data_test, z_data_test):
-            self.test_data[i] = [1, x, y, z]
+        for i, x, y, z, l in zip(range(75), x_data_test, y_data_test, z_data_test, self.labels_test):
+            self.test_data[i] = [1, x, y, z, l]
+        #print "test_data", self.test_data
 
     def predict_model(self):
 
-        t_pdt_1 = 0
-        t_pdt_2 = 0
-        t_pdt_3 = 0
         count = 0
+        #print "sayandeep",self.test_data
         for i in self.test_data:
-            t_pdt_1 = np.dot(i[:], np.transpose(self.u_weights[0]))
-            t_pdt_2 = np.dot(i[:], np.transpose(self.u_weights[1]))
-            t_pdt_3 = np.dot(i[:], np.transpose(self.u_weights[2]))
+            t_pdt_1 = np.dot(i[:4], np.transpose(self.u_weights[0]))
+            t_pdt_2 = np.dot(i[:4], np.transpose(self.u_weights[1]))
+            t_pdt_3 = np.dot(i[:4], np.transpose(self.u_weights[2]))
+            print count,"printings",t_pdt_1, t_pdt_2, t_pdt_3
             if t_pdt_1 >= 0:
                 self.prediction[count] = 1
             elif t_pdt_2 >= 0:
@@ -106,6 +111,29 @@ class SLP(object):
             count += 1
         #print self.prediction
         cm = cma.confusion_matrix(self.labels_test, self.prediction)
+        print 'confusion matrix for the model is', cm
+        print self.prediction
+        print self.test_data
+
+        count = 0
+        print "biswa", self.data_train
+        pred = np.zeros(shape=300)
+        for i in self.data_train:
+            t_pdt_1 = np.dot(i[:4], np.transpose(self.u_weights[0]))
+            t_pdt_2 = np.dot(i[:4], np.transpose(self.u_weights[1]))
+            t_pdt_3 = np.dot(i[:4], np.transpose(self.u_weights[2]))
+            print count,"printings",t_pdt_1, t_pdt_2, t_pdt_3
+            if t_pdt_1 >= 0:
+                pred[count] = 1
+            elif t_pdt_2 >= 0:
+                pred[count] = 2
+            elif t_pdt_3 >= 0:
+                pred[count] = 3
+            else:
+                pred[count] = 0
+            count += 1
+        #print self.prediction
+        cm = cma.confusion_matrix(self.data_train[:,-1], pred)
         print 'confusion matrix for the model is', cm
 
     # preparing training and testing data sets
@@ -139,6 +167,7 @@ class SLP(object):
 
 obj = SLP()
 obj.generate_data()
+obj.generate_test_data()
 #print obj.data_train
 obj.train_model(1)
 obj.train_model(2)
